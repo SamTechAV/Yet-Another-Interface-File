@@ -10,23 +10,11 @@ tags: ["parser", "code-generation", "schema", "typescript", "python", "json-sche
 
 # YAIF · Yet Another Interface File
 
+[![PyPI version](https://img.shields.io/pypi/v/yaif?style=flat-square&logo=pypi)](https://pypi.org/project/yaif/)
 ![Version](https://img.shields.io/badge/version-0.1.0-blue?style=flat-square&logo=python)
 ![License](https://img.shields.io/github/license/SamTechAV/Yet-Another-Interface-File?style=flat-square&logo=open-source)
 ![Python](https://img.shields.io/badge/python-3.10%2B-brightgreen?style=flat-square&logo=python)
 ![Built with stdlib](https://img.shields.io/badge/dependencies-zero-4493D?style=flat-square&logo=rust)
-
-**Define your data model once. Generate everything else.**
-
-YAIF is a lightweight, zero-dependency schema language and multi-target code generator. Write a single `.yaif` file describing your interfaces and enums, then generate:
-
-- 🐍 **Python** dataclasses & enums  
-- 📘 **TypeScript** interfaces & enums  
-- 📋 **JSON Schema** (draft-07)  
-- 🌐 **Interactive HTML CRUD** application (no build step)  
-- 💬 **Discord-formatted** output with rich embed support  
-
-All from the same source of truth.
-
 </div>
 
 ---
@@ -34,9 +22,7 @@ All from the same source of truth.
 ## 📦 Installation
 
 ```bash
-git clone https://github.com/SamTechAV/Yet-Another-Interface-File.git
-cd yaif
-pip install -e .
+pip install yaif
 ```
 
 YAIF uses only the Python standard library—no external dependencies required.
