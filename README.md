@@ -83,6 +83,36 @@ python -m yaif schema.yaif -t jsonschema -o schema.json
 
 ---
 
+## 🤖 Agent Skill (AI-Powered YAIF Creation)
+
+This repository includes a [Chalice Agent Skill](https://agentskills.io) for AI agents to generate perfectly formatted YAIF files. The skill provides comprehensive guidance on creating schemas that follow best practices, use all YAIF features, and target multiple outputs.
+
+### Usage
+
+If you're using an AI coding assistant that supports Agent Skills (Claude Code, Cursor, etc.), it can automatically discover and use this skill when you ask it to:
+
+- "Create a YAIF schema for an e-commerce platform"
+- "Generate a type-safe interface for users and orders"
+- "Build a data model for a blog with posts and comments"
+
+The skill contains:
+- Step-by-step instructions for YAIF file structure
+- Complete reference of types, annotations, and features
+- Examples for common use cases
+- Formatting rules and validation tips
+
+### Skill Location
+
+The skill is located at `.chalice/skills/yaif-generation/SKILL.md` in this repository. To use it:
+
+1. Ensure you're in a Chalice-enabled environment
+2. The skill will be auto-discovered when you open this project
+3. Ask your AI assistant to create or modify `.yaif` files
+
+See the [Agent Skills specification](https://agentskills.io/specification) for details on how skills work.
+
+---
+
 ## 📖 The `.yaif` Format
 
 A `.yaif` file consists of three block types:
@@ -388,6 +418,11 @@ Discord webhook options:
 ## 🗂️ Project Structure
 
 ```
+.chalice/
+└── skills/
+    └── yaif-generation/
+        └── SKILL.md       Agent skill for AI-powered YAIF file creation
+
 yaif/
 ├── __main__.py          CLI entrypoint
 ├── models.py            Data classes: YAIFField, YAIFInterface, YAIFEnum, YIFConfig
