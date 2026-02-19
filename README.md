@@ -85,7 +85,7 @@ python -m yaif schema.yaif -t jsonschema -o schema.json
 
 ## 🤖 Agent Skill (AI-Powered YAIF Creation)
 
-This repository includes a [Chalice Agent Skill](https://agentskills.io) for AI agents to generate perfectly formatted YAIF files. The skill provides comprehensive guidance on creating schemas that follow best practices, use all YAIF features, and target multiple outputs.
+This repository includes an [Agent Skill](https://agentskills.io) for AI agents to generate perfectly formatted YAIF files. The skill provides comprehensive guidance on creating schemas that follow best practices, use all YAIF features, and target multiple outputs.
 
 ### Usage
 
@@ -103,9 +103,9 @@ The skill contains:
 
 ### Skill Location
 
-The skill is located at `.chalice/skills/yaif-generation/SKILL.md` in this repository. To use it:
+The skill is located at `.agents/skills/yaif-generation/SKILL.md` in this repository. To use it:
 
-1. Ensure you're in a Chalice-enabled environment
+1. Ensure you're in an agent-enabled environment
 2. The skill will be auto-discovered when you open this project
 3. Ask your AI assistant to create or modify `.yaif` files
 
@@ -418,7 +418,7 @@ Discord webhook options:
 ## 🗂️ Project Structure
 
 ```
-.chalice/
+.agents/
 └── skills/
     └── yaif-generation/
         └── SKILL.md       Agent skill for AI-powered YAIF file creation
