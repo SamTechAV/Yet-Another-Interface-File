@@ -10,7 +10,7 @@ tags: ["parser", "code-generation", "schema", "typescript", "python", "json-sche
 
 # YAIF · Yet Another Interface File
 
-![Version](https://img.shields.io/badge/version-0.2.0-blue?style=flat-square&logo=python)
+![Version](https://img.shields.io/badge/version-0.1.0-blue?style=flat-square&logo=python)
 ![License](https://img.shields.io/github/license/SamTechAV/Yet-Another-Interface-File?style=flat-square&logo=open-source)
 ![Python](https://img.shields.io/badge/python-3.10%2B-brightgreen?style=flat-square&logo=python)
 ![Built with stdlib](https://img.shields.io/badge/dependencies-zero-4493D?style=flat-square&logo=rust)
