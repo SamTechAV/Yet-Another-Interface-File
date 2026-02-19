@@ -1,49 +1,51 @@
-# YAIF — Yet Another Interface Format
+<!--- yaml-front-matter-below
+---
+title: "YAIF — Yet Another Interface File"
+description: "A lightweight schema language and multi-target code generator. Define your data model once, generate Python, TypeScript, JSON Schema, HTML CRUD apps, and Discord output."
+tags: ["parser", "code-generation", "schema", "typescript", "python", "json-schema", "html", "discord", "low-code"]
+---
+-->
 
-A lightweight schema language and multi-target code generator. Define your data model once in a `.yaif` file, then generate Python dataclasses, TypeScript interfaces, JSON Schema, a fully interactive HTML CRUD prototype, or Discord-formatted output — all from the same source.
+<div align="center">
+
+# YAIF · Yet Another Interface File
+
+![Version](https://img.shields.io/badge/version-0.2.0-blue?style=flat-square&logo=python)
+![License](https://img.shields.io/github/license/SamTechAV/Yet-Another-Interface-File?style=flat-square&logo=open-source)
+![Python](https://img.shields.io/badge/python-3.10%2B-brightgreen?style=flat-square&logo=python)
+![Built with stdlib](https://img.shields.io/badge/dependencies-zero-4493D?style=flat-square&logo=rust)
+
+**Define your data model once. Generate everything else.**
+
+YAIF is a lightweight, zero-dependency schema language and multi-target code generator. Write a single `.yaif` file describing your interfaces and enums, then generate:
+
+- 🐍 **Python** dataclasses & enums  
+- 📘 **TypeScript** interfaces & enums  
+- 📋 **JSON Schema** (draft-07)  
+- 🌐 **Interactive HTML CRUD** application (no build step)  
+- 💬 **Discord-formatted** output with rich embed support  
+
+All from the same source of truth.
+
+</div>
 
 ---
 
-## Table of Contents
-
-- [Installation](#installation)
-- [Quick Start](#quick-start)
-- [The .yaif Format](#the-yaif-format)
-  - [Config Block](#config-block)
-  - [Interfaces](#interfaces)
-  - [Enums](#enums)
-  - [Types](#types)
-  - [Annotations](#annotations)
-  - [Inheritance](#inheritance)
-- [Generators](#generators)
-  - [Python](#python)
-  - [TypeScript](#typescript)
-  - [JSON Schema](#json-schema)
-  - [HTML](#html)
-  - [Discord](#discord)
-- [Discord Webhook](#discord-webhook)
-- [File Watcher](#file-watcher)
-- [CLI Reference](#cli-reference)
-
----
-
-## Installation
-
-Clone the repository and install dependencies (no external packages required for core usage):
+## 📦 Installation
 
 ```bash
-git clone https://github.com/yourorg/yaif.git
+git clone https://github.com/SamTechAV/Yet-Another-Interface-File.git
 cd yaif
 pip install -e .
 ```
 
-The project uses only the Python standard library for its core parser, generator, and watcher. The Discord webhook sender also uses only stdlib (`urllib`, `json`).
+YAIF uses only the Python standard library—no external dependencies required.
 
 ---
 
-## Quick Start
+## 🚀 Quick Start (60 seconds)
 
-1. Create a `.yaif` file:
+1️⃣ **Create** `schema.yaif`
 
 ```yaif
 [config]
@@ -60,11 +62,11 @@ admin: bool     = false
 admin, editor, viewer
 ```
 
-2. Generate output:
+2️⃣ **Generate** your code
 
 ```bash
 # Python dataclasses
-python -m yaif schema.yaif -t python
+python -m yaif schema.yaif -t python -o models.py
 
 # TypeScript interfaces
 python -m yaif schema.yaif -t typescript -o types.ts
@@ -72,73 +74,77 @@ python -m yaif schema.yaif -t typescript -o types.ts
 # Interactive HTML prototype
 python -m yaif schema.yaif -t html -o app.html
 
-# Validate only (no output)
-python -m yaif schema.yaif --validate-only
+# JSON Schema
+python -m yaif schema.yaif -t jsonschema -o schema.json
 ```
+
+3️⃣ **Open** `app.html` in your browser—instant CRUD UI with zero configuration.
 
 ---
 
-## The .yaif Format
+## ✨ Why YAIF?
 
-A `.yaif` file is made up of three kinds of blocks: `[config]`, `[interface]`, and `[enum]`. Lines beginning with `#` are comments.
+| ✅ Feature | 💡 Benefit |
+|-----------|------------|
+| **Single source of truth** | Define once, generate for multiple platforms |
+| **Zero runtime deps** | Pure stdlib—no `node_modules`, no `pip install` for users |
+| **Instant HTML UI** | Generated forms work immediately in any browser |
+| **Type-safe** | Strong typing across Python, TypeScript, JSON Schema |
+| **Live reload** | `--watch` mode regenerates on file changes |
+| **Discord integration** | Send formatted output directly to channels |
+| **Inheritance & grouping** | Build complex schemas with clean organization |
+| **Production-grade** | Validates circular dependencies, proper defaults |
 
-### Config Block
+---
 
-The `[config]` block holds app-level metadata and theming. All values are key-value pairs separated by `:`.
+## 📖 The `.yaif` Format
+
+A `.yaif` file consists of three block types:
+
+### 1. `[config]` — Application Metadata & Theming
 
 ```yaif
 [config]
-title:       My App
-description: A content management schema
-accent:      "#e05c2a"
-background:  "#f7f3ec"
-font:        "'Inter', sans-serif"
-mono:        "'DM Mono', monospace"
+title:       Store Admin
+description: E-commerce management
+accent:      "#007aff"
+background:  "#f2f2f7"
+surface:     "#ffffff"
+ink:         "#1c1c1e"
+muted:       "#8e8e93"
+font:        "'Inter', system-ui, sans-serif"
+mono:        "'SF Mono', 'Fira Code', monospace"
 ```
-
-Common config keys used by the HTML generator:
 
 | Key | Purpose | Default |
 |-----|---------|---------|
-| `title` | App name shown in the UI | `YAIF App` |
-| `description` | Subtitle / metadata | *(empty)* |
-| `accent` | Primary accent color | `#c84b31` |
-| `accent2` | Secondary accent color | `#2a6496` |
+| `title` | App name in HTML UI | `YAIF App` |
+| `description` | Subtitle | *(empty)* |
+| `accent` | Primary color | `#c84b31` |
+| `accent2` | Secondary color | `#2a6496` |
 | `background` | Page background | `#f5f0e8` |
 | `surface` | Card/panel background | `#ffffff` |
-| `ink` | Primary text color | `#1a1a2e` |
-| `muted` | Secondary text color | `#8a8070` |
+| `ink` | Primary text | `#1a1a2e` |
+| `muted` | Secondary text | `#8a8070` |
 | `font` | Body font stack | `'Fraunces', Georgia, serif` |
-| `mono` | Monospace font stack | `'DM Mono', monospace` |
-| `font_url` | Google Fonts URL override | *(DM Mono + Fraunces)* |
+| `mono` | Monospace font | `'DM Mono', monospace` |
+| `font_url` | Google Fonts override | *(DM Mono + Fraunces)* |
 
-### Interfaces
-
-Interfaces are the primary building block — each one maps to a class, type, or form:
+### 2. `[interface]` — Data Structures
 
 ```yaif
-[interface Post]
-title:    string
-body:     string
-tags:     list[string]
-author:   optional[Author]
-status:   PostStatus = draft
+[interface Post extends BaseEntity]
+title:    string                @label="Title"       @placeholder="Enter title"
+body:     string                @rows=8              @wide
+status:   PostStatus            @label="Status"      @order=10
+tags:     list[string]          @label="Tags"        @hint="Comma-separated"
+author:   optional[Author]      @label="Author"
+created:  string       = now()  @readonly            @group="Meta"
 ```
 
-Fields follow the pattern `name: type` or `name: type = default`.
+**Field syntax:** `name: type [= default] [@annotation]`
 
-### Enums
-
-Enums define a fixed set of string values, comma-separated:
-
-```yaif
-[enum PostStatus]
-draft, published, archived
-```
-
-### Types
-
-YAIF supports the following types:
+**Supported types:**
 
 | YAIF Type | Python | TypeScript | JSON Schema |
 |-----------|--------|------------|-------------|
@@ -148,43 +154,69 @@ YAIF supports the following types:
 | `bool` | `bool` | `boolean` | `{"type": "boolean"}` |
 | `list[T]` | `list[T]` | `T[]` | `{"type": "array", "items": ...}` |
 | `optional[T]` | `Optional[T]` | `T \| null` | `{"oneOf": [T, null]}` |
-| `dict[K, V]` | `dict[K, V]` | `Record<K, V>` | `{"type": "object", "additionalProperties": V}` |
-| `InterfaceName` | class reference | type reference | `$ref` |
-| `EnumName` | `Enum` subclass | `enum` | `$ref` |
+| `dict[K,V]` | `dict[K,V]` | `Record<K,V>` | `{"type": "object", "additionalProperties": V}` |
+| `InterfaceName` | class reference | type reference | `{"$ref": "#/$defs/InterfaceName"}` |
+| `EnumName` | `Enum` subclass | `enum` | `{"$ref": "#/$defs/EnumName"}` |
 
-### Annotations
-
-Annotations are hints attached to fields using `@key` or `@key="value"` syntax. They are placed after the type (and optional default) on the same line:
+### 3. `[enum]` — Enumerations
 
 ```yaif
-[interface Product]
-name:        string           @label="Product Name" @placeholder="Enter name"
-description: string           @rows=6 @wide @hint="Supports markdown"
-price:       float            @label="Price (USD)"
-internal_id: string           @hidden
-created_at:  optional[string] @readonly
+[enum PostStatus]
+draft, published, archived
+
+[enum Priority]
+low = 1, normal = 2, high = 3, urgent = 4
 ```
 
-**General annotations (used by HTML generator):**
+---
+
+## 🏷️ Annotations
+
+Place annotations after the type/default using `@key` or `@key="value"` syntax.
+
+### HTML Generator Annotations
 
 | Annotation | Effect |
-|-----------|--------|
-| `@label="Text"` | Display label (overrides field name) |
+|------------|--------|
+| `@label="Text"` | Custom field label (overrides name) |
 | `@placeholder="Text"` | Input placeholder text |
-| `@hint="Text"` | Helper text shown below the field |
-| `@hidden` | Exclude field from generated UI / output |
-| `@readonly` | Render as disabled / non-editable |
-| `@wide` | Span the full form width |
-| `@rows=N` | Render as a textarea with N rows |
-| `@group="Name"` | Group fields under a visual section header |
+| `@hint="Text"` | Helper text below field |
+| `@hidden` | Exclude from generated UI/output |
+| `@readonly` | Render as disabled/non-editable |
+| `@wide` | Span full form width |
+| `@rows=N` | Render as textarea with N rows |
+| `@group="Name"` | Group fields under collapsible section |
 | `@order=N` | Override field display order |
 | `@default="value"` | Alternative to `= value` syntax |
 
-**Discord annotations** (see [Discord](#discord) section).
+### Discord Annotations
 
-### Inheritance
+| Annotation | Effect |
+|------------|--------|
+| `@discord=table\|kv\|list` | Render mode for this interface |
+| `@discord_title="Name"` | Override section heading |
+| `@discord_icon="📊"` | Emoji prefix on heading |
+| `@discord_width=N` | Min column width (table mode) |
+| `@label="Text"` | Column/key header text |
+| `@hidden` | Skip field in output |
 
-Interfaces can extend one another using `extends`. All parent fields are inherited and included in generated output:
+### Embed Annotations (when using `--embed`)
+
+| Annotation | Effect |
+|------------|--------|
+| `@embed_color="#rrggbb"` | Sidebar color for this embed |
+| `@embed_url="https://..."` | Make title a hyperlink |
+| `@embed_footer="text"` | Custom footer text |
+| `@embed_thumbnail` | Use field value as thumbnail URL |
+| `@embed_image` | Use field value as embed image |
+| `@embed_timestamp` | Use field value as ISO 8601 timestamp |
+|| `@embed_inline` | Render field side-by-side with others |
+
+---
+
+## 🔄 Inheritance
+
+Interfaces can extend other interfaces—all parent fields are inherited.
 
 ```yaif
 [interface BaseEntity]
@@ -196,15 +228,15 @@ title: string
 body:  string
 ```
 
-Circular inheritance is detected and raises a parse error. Multiple levels of inheritance are supported.
+Circular inheritance is detected and raises a parse error. Multiple inheritance levels are supported.
 
 ---
 
-## Generators
+## ⚙️ Generators
 
-Run any generator with `-t <target>`. Pipe to stdout or write to a file with `-o <file>`.
+Run any generator with `-t <target>`. Pipe to stdout or write with `-o <file>`.
 
-### Python
+### 🐍 Python
 
 Generates `@dataclass` classes and `Enum` subclasses.
 
@@ -230,9 +262,11 @@ class Post:
     tags: list[str] = field(default_factory=list)
 ```
 
-Fields without defaults are placed before fields with defaults (required by Python dataclasses).
+> **Note:** Fields without defaults appear before fields with defaults (required by Python dataclasses).
 
-### TypeScript
+---
+
+### 📘 TypeScript
 
 Generates `export interface` and `export enum` declarations.
 
@@ -254,61 +288,58 @@ export interface Post extends BaseEntity {
 }
 ```
 
-### JSON Schema
+---
 
-Generates draft-07 JSON Schema with `$definitions` for all interfaces and enums. Supports `$ref` for cross-references and `allOf` for inheritance.
+### 📋 JSON Schema
+
+Generates draft-07 JSON Schema with `$definitions`. Supports `$ref` and `allOf` for inheritance.
 
 ```bash
 python -m yaif schema.yaif -t jsonschema -o schema.json
 ```
 
-### HTML
+---
 
-Generates a fully self-contained, single-file HTML application — no build step, no server required. Open it in any browser.
+### 🌐 HTML (Instant CRUD UI)
+
+Generates a fully self-contained, single-file HTML application. No build step, no server—just open in a browser.
 
 ```bash
 python -m yaif schema.yaif -t html -o app.html
 ```
 
-Features of the generated app:
-- A tab per interface
-- Forms with appropriate inputs for every field type (text, number, checkbox, select for enums, textarea for long text, nested forms for interface fields, dynamic lists and dicts)
-- Add, edit, delete, and export records as JSON
-- Field grouping via `@group`, ordering via `@order`
-- Full theming driven by the `[config]` block (colors, fonts)
+**Features:**
+- 📑 A tab per interface
+- 📝 Forms with appropriate inputs (text, number, checkbox, select, textarea)
+- 🔄 Nested forms for interface fields, dynamic lists & dicts
+- ➕➖ Add, edit, delete, export records as JSON
+- 🎨 Full theming from `[config]` block
+- 📱 Responsive design
+- ⚡ Client-side only—no backend needed
 
-### Discord
+---
 
-Generates formatted text output for pasting or sending to Discord. Uses box-drawing characters inside code blocks for clean rendering.
+### 💬 Discord Output
+
+Generates formatted text with box-drawing characters for clean Discord rendering.
 
 ```bash
 python -m yaif discord.yaif -t discord
 ```
 
-Three rendering modes, controlled per-interface with `@discord=<mode>`:
+**Render modes:**
 
-| Mode | Annotation | Output |
-|------|-----------|--------|
-| `table` | `@discord=table` *(default)* | Box-drawing table with column headers |
-| `kv` | `@discord=kv` | Aligned key: value pairs |
-| `list` | `@discord=list` | Bulleted list |
-
-**Discord field annotations:**
-
-| Annotation | Effect |
-|-----------|--------|
-| `@discord=table\|kv\|list` | Set render mode for this interface |
-| `@discord_title="Name"` | Override the section heading |
-| `@discord_icon="📊"` | Emoji prefix on the heading |
-| `@discord_width=N` | Minimum column width (table mode) |
-| `@label="Text"` | Column/key header text |
-| `@hidden` | Skip this field in Discord output |
+| Mode | Default | Example |
+|------|---------|---------|
+| `table` | ✅ | Box-drawing table with column headers |
+| `kv` |  | Aligned `key: value` pairs |
+| `list` |  | Bulleted list |
 
 ---
 
-## Discord Webhook
+## 📤 Discord Webhook
 
-Send output directly to a Discord channel without leaving the terminal.
+Send output directly to a Discord channel from the terminal.
 
 ```bash
 # Send plain text
@@ -316,11 +347,9 @@ python -m yaif discord.yaif -t discord --send --webhook-url https://discord.com/
 
 # Send as rich embeds
 python -m yaif discord.yaif -t discord --send --embed
-
-# Store the webhook URL in the file so you don't have to pass it every time
 ```
 
-Set `webhook_url` in the `[config]` block to avoid passing `--webhook-url` on every run:
+Store the webhook URL in `[config]` to avoid passing it every time:
 
 ```yaif
 [config]
@@ -330,66 +359,54 @@ embed_mode:       false
 embed_color:      #5865F2
 ```
 
-**Rich embed annotations** (used when `--embed` or `embed_mode: true`):
-
-| Annotation | Effect |
-|-----------|--------|
-| `@embed_color="#rrggbb"` | Sidebar color for this interface's embed |
-| `@embed_url="https://..."` | Make the embed title a hyperlink |
-| `@embed_footer="text"` | Custom footer text |
-| `@embed_thumbnail` | Use field's default as thumbnail URL |
-| `@embed_image` | Use field's default as embed image URL |
-| `@embed_timestamp` | Use field's default as ISO 8601 timestamp |
-| `@embed_inline` | Render field side-by-side with others |
-
-Discord limits 10 embeds per message — YAIF automatically batches larger payloads into multiple requests.
+> **Limitation:** Discord allows max 10 embeds per message—YAIF auto-batches larger payloads.
 
 ---
 
-## File Watcher
+## 👁️ File Watcher
 
-Watch a `.yaif` file and automatically regenerate output on every save:
+Watch a `.yaif` file and regenerate output automatically on every save:
 
 ```bash
 python -m yaif schema.yaif -t typescript -o types.ts --watch
 ```
 
-Uses simple polling (no external dependencies). Press `Ctrl+C` to stop.
+Uses simple polling (no external deps). Press `Ctrl+C` to stop.
 
 ---
 
-## CLI Reference
+## 🎯 CLI Reference
 
-```
+```txt
 python -m yaif <file> [options]
 
 Positional:
   file                    Path to the .yaif file
 
 Generator options:
-  -t, --target            Output target: python, typescript, jsonschema, html, discord
-  -o, --output            Write output to this file (default: stdout)
-  --validate-only         Parse and validate without generating output
-  -w, --watch             Watch file for changes and regenerate automatically
+  -t, --target            Target: python, typescript, jsonschema, html, discord
+  -o, --output            Write to file (default: stdout)
+  --validate-only         Parse and validate without generating
+  -w, --watch             Watch for changes and regenerate
 
 Discord webhook options:
-  --send                  Send output to a Discord webhook
-  --webhook-url URL       Discord webhook URL (overrides config)
-  --embed                 Send as rich embeds instead of plain text
+  --send                  Send to Discord webhook
+  --webhook-url URL       Webhook URL (overrides config)
+  --embed                 Send as rich embeds
   --webhook-username NAME Override bot display name
   --webhook-avatar URL    Override bot avatar URL
 ```
 
 ---
 
-## Project Structure
+## 🗂️ Project Structure
 
 ```
 yaif/
 ├── __main__.py          CLI entrypoint
-├── models.py            Data classes: YAIFField, YAIFInterface, YAIFEnum, YAIFConfig
-├── parser.py            YAIFParser — tokenizes and validates .yaif source
-├── discord_webhook.py   Discord embed builder and HTTP sender
+├── models.py            Data classes: YAIFField, YAIFInterface, YAIFEnum, YIFConfig
+├── parser.py            YAIFParser — tokenizes & validates .yaif source
+├── discord_webhook.py   Discord embed builder + HTTP sender
 ├── watcher.py           File watcher (polling-based)
 └── generators/
     ├── base.py          BaseGenerator abstract class
@@ -402,13 +419,46 @@ yaif/
 
 ---
 
-## Example Files
+## 📚 Example Files
 
-- `example.yaif` — full kitchen-sink example (blog system) demonstrating all HTML generator features
-- `discord.yaif` — Discord output demo with all render modes and embed annotations
+Explore real-world usage in the `examples/` directory:
+
+| Example | Description |
+|---------|-------------|
+| [`ecommerce.yaif`](examples/ecommerce.yaif) | Full e-commerce schema: products, orders, customers, reviews |
+| [`clinic.yaif`](examples/clinic.yaif) | Medical clinic patient & appointment system |
+| [`project_tracker.yaif`](examples/project_tracker.yaif) | Project & task management |
+| [`jobs.yaif`](examples/jobs.yaif) | Job board with postings & applications |
+| [`smart_home.yaif`](examples/smart_home.yaif) | IoT device & automation dashboard |
+| [`rpg.yaif`](examples/rpg.yaif) | RPG game entities (characters, items, quests) |
+| [`ci_discord.yaif`](examples/ci_discord.yaif) | Discord notifications for CI/CD |
 
 ---
 
-## License
+## 🤝 Contributing
 
-See `LICENSE.txt` for terms.
+Contributions are welcome! Please:
+
+1. Fork the repository
+2. Create a feature branch
+3. Add tests for new functionality
+4. Ensure `python -m yaif --validate-only` passes on example files
+5. Submit a pull request
+
+See `CONTRIBUTING.md` for detailed guidelines.
+
+---
+
+## 📄 License
+
+MIT License—see [`LICENSE.txt`](LICENSE.txt) for details.
+
+---
+
+<div align="center">
+
+**Built with ❤️ using only Python standard library**
+
+[GitHub](https://github.com/SamTechAV/Yet-Another-Interface-File) · [Issues](https://github.com/SamTechAV/Yet-Another-Interface-File/issues) · [Changelog](CHANGELOG.md)
+
+</div>
