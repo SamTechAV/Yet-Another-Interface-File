@@ -1,4 +1,4 @@
-# ─── YAIF Example: Job Board & Recruitment ───────────────────────
+# YAIF Example: Job Board & Recruitment
 # Models a hiring platform: companies, job listings, candidates,
 # applications, and interview rounds.
 # Demonstrates: enums for controlled vocabulary, optional fields
@@ -9,6 +9,7 @@
 #   python -m yaif jobs.yaif -t python     -o models.py
 #   python -m yaif jobs.yaif -t typescript -o types.ts
 #   python -m yaif jobs.yaif -t jsonschema -o schema.json
+#   python -m yaif jobs.yaif --validate-only
 # ──────────────────────────────────────────────────────────────────
 
 [config]

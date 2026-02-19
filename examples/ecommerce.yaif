@@ -1,4 +1,4 @@
-# ─── YAIF Example: E-Commerce Store ──────────────────────────────
+# YAIF Example: E-Commerce Store
 # Models an online store: products, orders, customers, and reviews.
 # Demonstrates: inheritance, nested interfaces, list/dict types,
 # optional fields, enums, and field grouping.
@@ -8,6 +8,7 @@
 #   python -m yaif ecommerce.yaif -t python     -o models.py
 #   python -m yaif ecommerce.yaif -t typescript -o types.ts
 #   python -m yaif ecommerce.yaif -t jsonschema -o schema.json
+#   python -m yaif ecommerce.yaif --validate-only
 # ──────────────────────────────────────────────────────────────────
 
 [config]
@@ -72,8 +73,7 @@ phone:      optional[string] @label="Phone"      @placeholder="+1 555 000 0000" 
 is_verified: bool = false    @label="Verified"                                   @group="Personal" @order=5
 
 billing_address:  Address           @label="Billing Address"  @group="Addresses" @order=6
-shipping_address: optional[Address] @label="Shipping Address" @group="Addresses"
-                                    @hint="Leave blank to use billing address"   @order=7
+shipping_address: optional[Address] @label="Shipping Address" @group="Addresses" @hint="Leave blank to use billing address" @order=7
 
 notes: optional[string] @label="Internal Notes" @rows=3 @hint="Not visible to customer" @group="Admin" @order=8
 tags:  list[string]     @label="Tags"           @hint="e.g. vip, wholesale"              @group="Admin" @order=9
@@ -93,16 +93,14 @@ stock:       int = 0          @label="Stock"                                    
 low_stock_threshold: int = 10 @label="Low Stock Alert" @hint="Alert when stock falls below" @order=7
 
 description: string           @label="Description" @rows=6 @wide                            @order=8
-short_desc:  optional[string] @label="Short Desc"  @rows=2 @wide
-                              @hint="Used in listings and search cards"                      @order=9
+short_desc:  optional[string] @label="Short Desc"  @rows=2 @wide @hint="Used in listings and search cards" @order=9
 
 weight_kg:  optional[float]  @label="Weight (kg)"                      @group="Shipping" @order=10
 is_digital: bool = false     @label="Digital Product"                  @group="Shipping" @order=11
 is_active:  bool = true      @label="Active" @hint="Show in storefront" @group="Admin"   @order=12
 
 images: list[string]         @label="Image URLs"                       @group="Media"    @order=13
-meta:   dict[string,string]  @label="Custom Attributes"
-                             @hint="e.g. color: red, size: XL"                           @order=14
+meta:   dict[string,string]  @label="Custom Attributes" @hint="e.g. color: red, size: XL" @order=14
 
 
 # ── Order ─────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-# ─── YAIF Example: Home Automation / IoT ─────────────────────────
+# YAIF Example: Home Automation / IoT
 # Models a smart home system: homes, rooms, devices, automations,
 # and event logs. Demonstrates: dict types for device state/config,
 # list-of-structs for trigger/action rules, and time-series logging.
@@ -8,6 +8,7 @@
 #   python -m yaif smart_home.yaif -t python     -o models.py
 #   python -m yaif smart_home.yaif -t typescript -o types.ts
 #   python -m yaif smart_home.yaif -t jsonschema -o schema.json
+#   python -m yaif smart_home.yaif --validate-only
 # ──────────────────────────────────────────────────────────────────
 
 [config]

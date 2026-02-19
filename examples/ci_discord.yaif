@@ -1,4 +1,4 @@
-# ─── YAIF Example: CI/CD Discord Notifications ───────────────────
+# YAIF Example: CI/CD Discord Notifications
 # Send pipeline results, deploy summaries, and alerts to Discord.
 # Demonstrates: all three Discord render modes (table, kv, list),
 # rich embed annotations, and webhook config in the [config] block.
@@ -15,6 +15,9 @@
 # Override webhook URL at runtime:
 #   python -m yaif ci_discord.yaif -t discord --send \
 #     --webhook-url https://discord.com/api/webhooks/...
+#
+# Validate only:
+#   python -m yaif ci_discord.yaif --validate-only
 # ──────────────────────────────────────────────────────────────────
 
 [config]
@@ -121,8 +124,7 @@ fix:      string @label="Fix version"
 # @hidden             hides the field entirely (used for metadata carriers)
 
 [interface DeployEmbed]
-service:     string  @label="Service"     @discord=kv @discord_title="Deploy" @discord_icon="🚢"
-                     @embed_color="#2ecc71" @embed_url="https://dashboard.example.com/deploys"
+service:     string  @label="Service"     @discord=kv @discord_title="Deploy" @discord_icon="🚢" @embed_color="#2ecc71" @embed_url="https://dashboard.example.com/deploys"
 version:     string  @label="Version"     @embed_inline
 environment: string  @label="Environment" @embed_inline
 deployed_by: string  @label="Deployed by" @embed_inline
@@ -132,8 +134,7 @@ footer:      string  @hidden @embed_footer="Deployed via YAIF"
 
 
 [interface AlertEmbed]
-title:       string  @label="Alert"       @discord=kv @discord_title="Alert" @discord_icon="🚨"
-                     @embed_color="#e74c3c"
+title:       string  @label="Alert"       @discord=kv @discord_title="Alert" @discord_icon="🚨" @embed_color="#e74c3c"
 severity:    string  @label="Severity"    @embed_inline
 service:     string  @label="Service"     @embed_inline
 triggered:   string  @label="Triggered"   @embed_inline

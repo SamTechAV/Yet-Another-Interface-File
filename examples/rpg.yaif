@@ -1,4 +1,4 @@
-# ─── YAIF Example: RPG Character System ──────────────────────────
+# YAIF Example: RPG Character System
 # Models a tabletop RPG: characters, inventory, spells, and combat.
 # Demonstrates: enum-heavy schemas, dict types for stat blocks,
 # list-of-structs for inventory and spell slots.
@@ -8,6 +8,7 @@
 #   python -m yaif rpg.yaif -t python     -o rpg_models.py
 #   python -m yaif rpg.yaif -t typescript -o rpg_types.ts
 #   python -m yaif rpg.yaif -t jsonschema -o rpg_schema.json
+#   python -m yaif rpg.yaif --validate-only
 # ──────────────────────────────────────────────────────────────────
 
 [config]

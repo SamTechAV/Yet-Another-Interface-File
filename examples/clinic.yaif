@@ -1,4 +1,4 @@
-# ─── YAIF Example: Clinical Records ──────────────────────────────
+# YAIF Example: Clinical Records
 # Models a basic electronic health record system: patients,
 # practitioners, appointments, and prescriptions.
 # Demonstrates: optional fields for incomplete data, enums for
@@ -9,6 +9,7 @@
 #   python -m yaif clinic.yaif -t python     -o models.py
 #   python -m yaif clinic.yaif -t typescript -o types.ts
 #   python -m yaif clinic.yaif -t jsonschema -o schema.json
+#   python -m yaif clinic.yaif --validate-only
 # ──────────────────────────────────────────────────────────────────
 
 [config]
@@ -68,8 +69,7 @@ created_by: string @readonly @label="Created by" @group="Audit" @order=100
 phone_primary:   string           @label="Primary Phone"   @placeholder="+1 555 000 0000" @order=1
 phone_secondary: optional[string] @label="Secondary Phone" @placeholder="+1 555 000 0001" @order=2
 email:           optional[string] @label="Email"           @placeholder="patient@example.com" @order=3
-preferred_contact: string = "phone" @label="Preferred Contact"
-                             @hint="phone, email, or mail"                                 @order=4
+preferred_contact: string = "phone" @label="Preferred Contact" @hint="phone, email, or mail" @order=4
 
 [interface Address]
 line1:   string           @label="Street"   @placeholder="123 Main St"      @wide @order=1
@@ -89,8 +89,7 @@ last_name:   string           @label="Last Name"    @placeholder="Smith"       @
 date_of_birth: string         @label="Date of Birth" @placeholder="YYYY-MM-DD" @group="Identity" @order=3
 sex:         Sex              @label="Sex"                                      @group="Identity" @order=4
 pronouns:    optional[string] @label="Pronouns"     @placeholder="she/her"     @group="Identity" @order=5
-mrn:         string           @label="MRN"          @hint="Medical Record Number" @readonly
-                              @group="Identity"      @order=6
+mrn:         string           @label="MRN"          @hint="Medical Record Number" @readonly @group="Identity" @order=6
 
 # ── Clinical ──
 blood_type:  BloodType        @label="Blood Type"                              @group="Clinical" @order=7
