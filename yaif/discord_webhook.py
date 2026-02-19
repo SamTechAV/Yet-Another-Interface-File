@@ -5,6 +5,14 @@ Sends generated YAIF output to a Discord webhook. Supports both:
   - Plain text mode: wraps the existing discord generator output in a message
   - Embed mode: builds rich Discord embeds from interface data
 
+Discord API limits enforced (2026):
+  - Message content: 2000 characters (auto-chunked on newlines)
+  - Embeds per message: 10 (auto-batched)
+  - Embed title: 256 characters (truncated)
+  - Embed field name: 256 characters (truncated)
+  - Embed field value: 1024 characters (truncated)
+  - Embed footer: 2048 characters (truncated)
+
 Config keys recognised in [config] block:
     webhook_url         Required. The Discord webhook URL to POST to.
     webhook_username    Optional. Override the bot's display name.
@@ -35,6 +43,16 @@ from typing import Optional
 from .models import YAIFInterface, YAIFEnum, YAIFConfig
 
 
+# ── Discord API limits (2026) ───────────────────────────────────────────────────
+
+DISCORD_MESSAGE_LIMIT = 2000
+DISCORD_MAX_EMBEDS = 10
+DISCORD_EMBED_TITLE_LIMIT = 256
+DISCORD_FIELD_NAME_LIMIT = 256
+DISCORD_FIELD_VALUE_LIMIT = 1024
+DISCORD_FOOTER_LIMIT = 2048
+
+
 # ── Colour helper ────────────────────────────────────────────────────────────
 
 
@@ -45,6 +63,18 @@ def _hex_to_int(hex_str: str) -> int:
         return int(h, 16)
     except ValueError:
         return 0x5865F2  # Discord blurple fallback
+
+
+def _truncate(text: str, limit: int) -> str:
+    """Truncate text to limit, preserving words when possible, appending ellipsis."""
+    if len(text) <= limit:
+        return text
+    # Try to break at last space within limit
+    truncated = text[: limit - 1]
+    last_space = truncated.rfind(" ")
+    if last_space > limit * 0.7:  # if we can break at a word without losing too much
+        truncated = truncated[:last_space]
+    return truncated.strip() + "…"
 
 
 # ── Field helpers ────────────────────────────────────────────────────────────
@@ -117,8 +147,10 @@ def build_embed(iface: YAIFInterface, iface_map: dict, config: YAIFConfig) -> di
             timestamp_val = f.default
 
     prefix = f"{icon} " if icon else ""
+    # Enforce Discord embed title limit (256 chars)
+    full_title = f"{prefix}{title}"
     embed: dict = {
-        "title": f"{prefix}{title}",
+        "title": _truncate(full_title, DISCORD_EMBED_TITLE_LIMIT),
         "color": _hex_to_int(color_hex),
         "fields": [],
     }
@@ -128,7 +160,7 @@ def build_embed(iface: YAIFInterface, iface_map: dict, config: YAIFConfig) -> di
     if config.description and not footer_text:
         footer_text = config.description
     if footer_text:
-        embed["footer"] = {"text": footer_text}
+        embed["footer"] = {"text": _truncate(footer_text, DISCORD_FOOTER_LIMIT)}
     if thumbnail_url:
         embed["thumbnail"] = {"url": thumbnail_url}
     if image_url:
@@ -160,10 +192,14 @@ def build_embed(iface: YAIFInterface, iface_map: dict, config: YAIFConfig) -> di
         value = _fmt_value(f.default) if f.default else _fmt_value(None)
         inline = bool(f.ann("embed_inline", False))
 
+        # Enforce Discord field name (256) and value (1024) limits
+        name = _truncate(name, DISCORD_FIELD_NAME_LIMIT)
+        value = _truncate(value or "-", DISCORD_FIELD_VALUE_LIMIT)
+
         embed["fields"].append(
             {
                 "name": name,
-                "value": value or "-",
+                "value": value,
                 "inline": inline,
             }
         )
@@ -204,9 +240,9 @@ def build_text_payload(
     avatar_url: str = None,
 ) -> dict:
     """Build a plain-text webhook payload (wraps the discord generator output)."""
-    # Discord messages max out at 2000 chars; trim gracefully if needed
-    if len(content) > 2000:
-        content = content[:1994] + "\n…"
+    # Discord messages max out at DISCORD_MESSAGE_LIMIT chars; trim gracefully if needed
+    if len(content) > DISCORD_MESSAGE_LIMIT:
+        content = content[: DISCORD_MESSAGE_LIMIT - 6] + "\n…"
     payload: dict = {"content": content}
     if username:
         payload["username"] = username
@@ -319,8 +355,8 @@ def send(
             raise WebhookError(
                 "plain_text_content is required when embed_mode is False."
             )
-        # Split into 2000-char chunks on newlines
-        chunks = _split_message(plain_text_content, limit=2000)
+        # Split into DISCORD_MESSAGE_LIMIT-char chunks on newlines
+        chunks = _split_message(plain_text_content, limit=DISCORD_MESSAGE_LIMIT)
         for chunk in chunks:
             send_webhook(url, build_text_payload(chunk, display_name, avatar))
 
