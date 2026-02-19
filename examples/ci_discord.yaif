@@ -1,0 +1,141 @@
+# ─── YAIF Example: CI/CD Discord Notifications ───────────────────
+# Send pipeline results, deploy summaries, and alerts to Discord.
+# Demonstrates: all three Discord render modes (table, kv, list),
+# rich embed annotations, and webhook config in the [config] block.
+#
+# Plain text to stdout:
+#   python -m yaif ci_discord.yaif -t discord
+#
+# Send plain text via webhook:
+#   python -m yaif ci_discord.yaif -t discord --send
+#
+# Send as rich embeds:
+#   python -m yaif ci_discord.yaif -t discord --send --embed
+#
+# Override webhook URL at runtime:
+#   python -m yaif ci_discord.yaif -t discord --send \
+#     --webhook-url https://discord.com/api/webhooks/...
+# ──────────────────────────────────────────────────────────────────
+
+[config]
+title:            CI/CD Pipeline
+description:      Build and deploy notifications
+
+# ── Webhook defaults ──────────────────────────────────────────────
+# Set these so you can run --send without extra flags.
+# All values can be overridden on the command line.
+webhook_url:      https://discord.com/api/webhooks/YOUR_ID/YOUR_TOKEN
+webhook_username: Pipeline Bot
+# webhook_avatar_url: https://example.com/bot-avatar.png
+
+# Send as rich embeds by default (set to true to skip --embed flag)
+embed_mode:  false
+embed_color: #5865F2
+
+
+# ── Table mode: side-by-side comparisons ──────────────────────────
+# @discord=table (the default) renders a box-drawing table.
+# @discord_width sets the minimum column width for that column.
+# @label overrides the column header.
+
+[interface BuildMatrix]
+job:      string @label="Job"      @discord=table @discord_title="Build Matrix" @discord_icon="🔨" @discord_width=20
+runner:   string @label="Runner"   @discord_width=14
+duration: string @label="Duration" @discord_width=10
+status:   string @label="Status"   @discord_width=10
+
+
+[interface TestCoverage]
+package:  string @label="Package"  @discord=table @discord_title="Test Coverage" @discord_icon="🧪" @discord_width=24
+lines:    string @label="Lines"    @discord_width=8
+branches: string @label="Branches" @discord_width=10
+change:   string @label="Δ"        @discord_width=8
+
+
+[interface BundleSize]
+target:    string @label="Target"    @discord=table @discord_title="Bundle Sizes" @discord_icon="📦" @discord_width=20
+before_kb: string @label="Before"   @discord_width=10
+after_kb:  string @label="After"    @discord_width=10
+delta:     string @label="Delta"    @discord_width=10
+
+
+# ── KV mode: single-record summaries ──────────────────────────────
+# @discord=kv renders aligned key: value pairs — ideal for one record
+# that represents the current state of something.
+
+[interface DeployInfo]
+service:     string           @label="Service"     @discord=kv @discord_title="Deployment" @discord_icon="🚀"
+version:     string           @label="Version"
+environment: string           @label="Environment"
+deployed_by: string           @label="Deployed by"
+branch:      string           @label="Branch"
+commit:      string           @label="Commit"
+duration:    string           @label="Duration"
+status:      string           @label="Status"
+notes:       optional[string] @label="Notes"
+
+
+[interface PipelineSummary]
+repo:        string @label="Repository"  @discord=kv @discord_title="Pipeline" @discord_icon="⚙️"
+branch:      string @label="Branch"
+commit:      string @label="Commit"
+triggered_by: string @label="Triggered by"
+started:     string @label="Started"
+duration:    string @label="Duration"
+total_jobs:  string @label="Total jobs"
+passed:      string @label="Passed"
+failed:      string @label="Failed"
+skipped:     string @label="Skipped"
+
+
+# ── List mode: changelog / issue lists ────────────────────────────
+# @discord=list renders a bulleted list.
+# The first field is the primary (bolded) item; the rest are shown inline.
+
+[interface ChangelogEntry]
+change:   string           @label="Change"  @discord=list @discord_title="What's New" @discord_icon="✨"
+type:     string           @label="Type"
+pr:       optional[string] @label="PR"
+
+[interface FailedTest]
+test:     string @label="Test"    @discord=list @discord_title="Failed Tests" @discord_icon="❌"
+file:     string @label="File"
+duration: string @label="Duration"
+
+[interface SecurityAlert]
+cve:      string @label="CVE"       @discord=list @discord_title="Security Alerts" @discord_icon="🔐"
+severity: string @label="Severity"
+package:  string @label="Package"
+fix:      string @label="Fix version"
+
+
+# ── Rich embed annotations ────────────────────────────────────────
+# These only matter when using --embed or embed_mode: true.
+# In plain text mode they are silently ignored.
+#
+# @embed_color        sidebar colour for this interface's embed
+# @embed_url          makes the embed title a clickable link
+# @embed_footer       custom footer text
+# @embed_inline       renders field side-by-side with neighbours
+# @embed_timestamp    ISO 8601 value shown in the embed footer
+# @hidden             hides the field entirely (used for metadata carriers)
+
+[interface DeployEmbed]
+service:     string  @label="Service"     @discord=kv @discord_title="Deploy" @discord_icon="🚢"
+                     @embed_color="#2ecc71" @embed_url="https://dashboard.example.com/deploys"
+version:     string  @label="Version"     @embed_inline
+environment: string  @label="Environment" @embed_inline
+deployed_by: string  @label="Deployed by" @embed_inline
+status:      string  @label="Status"      @embed_inline
+timestamp:   string  @label="Timestamp"   @embed_timestamp
+footer:      string  @hidden @embed_footer="Deployed via YAIF"
+
+
+[interface AlertEmbed]
+title:       string  @label="Alert"       @discord=kv @discord_title="Alert" @discord_icon="🚨"
+                     @embed_color="#e74c3c"
+severity:    string  @label="Severity"    @embed_inline
+service:     string  @label="Service"     @embed_inline
+triggered:   string  @label="Triggered"   @embed_inline
+description: string  @label="Description"
+runbook:     string  @label="Runbook"     @embed_url="https://runbooks.example.com"

@@ -1,0 +1,181 @@
+# ─── YAIF Example: Home Automation / IoT ─────────────────────────
+# Models a smart home system: homes, rooms, devices, automations,
+# and event logs. Demonstrates: dict types for device state/config,
+# list-of-structs for trigger/action rules, and time-series logging.
+#
+# Try it:
+#   python -m yaif smart_home.yaif -t html       -o home.html
+#   python -m yaif smart_home.yaif -t python     -o models.py
+#   python -m yaif smart_home.yaif -t typescript -o types.ts
+#   python -m yaif smart_home.yaif -t jsonschema -o schema.json
+# ──────────────────────────────────────────────────────────────────
+
+[config]
+title:       Home Hub
+description: Smart home device and automation schema
+
+ink:        #0c1220
+background: #111827
+cream:      #1f2937
+line:       #374151
+surface:    #1a2535
+accent:     #38bdf8
+accent2:    #34d399
+muted:      #6b7280
+
+font: "'Nunito', 'Segoe UI', sans-serif"
+mono: "'Fira Code', 'Cascadia Code', monospace"
+
+
+# ── Enums ─────────────────────────────────────────────────────────
+
+[enum DeviceType]
+light, switch, thermostat, lock, sensor, camera, speaker,
+plug, fan, blind, doorbell, hub, vacuum, irrigation
+
+[enum DeviceStatus]
+online, offline, updating, error, pairing
+
+[enum SensorType]
+temperature, humidity, motion, door, window, smoke,
+co2, air_quality, water_leak, light_level, power
+
+[enum AutomationTriggerType]
+time, sunrise, sunset, device_state, sensor_threshold,
+webhook, manual, location_arrival, location_departure
+
+[enum AutomationActionType]
+set_device_state, send_notification, run_scene,
+call_webhook, delay, run_automation
+
+[enum LogLevel]
+debug, info, warning, error, critical
+
+[enum SceneType]
+morning, away, evening, night, movie, work, party, vacation, custom
+
+
+# ── Location hierarchy ────────────────────────────────────────────
+
+[interface Home]
+name:       string           @label="Home Name"    @placeholder="My House"     @order=1
+address:    optional[string] @label="Address"      @placeholder="123 Main St"  @order=2
+timezone:   string = "UTC"   @label="Timezone"     @placeholder="US/Eastern"   @order=3
+latitude:   optional[float]  @label="Latitude"                                 @order=4
+longitude:  optional[float]  @label="Longitude"                                @order=5
+owner_email: string          @label="Owner Email"                               @order=6
+is_vacation_mode: bool = false @label="Vacation Mode"                          @order=7
+notes:      optional[string] @label="Notes"        @rows=3 @group="Admin"      @order=8
+
+
+[interface Room]
+home:       Home             @label="Home"                               @order=1
+name:       string           @label="Room Name"  @placeholder="Kitchen" @order=2
+floor:      int = 1          @label="Floor"                              @order=3
+area_sqft:  optional[float]  @label="Area (sqft)"                       @order=4
+icon:       optional[string] @label="Icon"       @placeholder="🛋️"      @order=5
+
+
+# ── Devices ───────────────────────────────────────────────────────
+# state and config are dict[string, string] so any device type
+# can store its own properties without a rigid schema.
+# e.g. state: { brightness: "80", color_temp: "3000K", on: "true" }
+
+[interface Device]
+room:           Room          @label="Room"                                          @order=1
+name:           string        @label="Device Name"   @placeholder="Ceiling Light"   @order=2
+type:           DeviceType    @label="Type"                                          @order=3
+manufacturer:   optional[string] @label="Brand"      @placeholder="Philips"         @order=4
+model:          optional[string] @label="Model"      @placeholder="Hue Color A19"   @order=5
+firmware:       optional[string] @label="Firmware"   @readonly                      @order=6
+status:         DeviceStatus  @label="Status"        @readonly                      @order=7
+ip_address:     optional[string] @label="IP"         @readonly                      @order=8
+mac_address:    optional[string] @label="MAC"        @readonly                      @order=9
+
+state:   dict[string,string]  @label="Current State" @hint="e.g. on: true, brightness: 80" @group="Runtime" @order=10
+config:  dict[string,string]  @label="Config"        @hint="e.g. min_brightness: 10"       @group="Runtime" @order=11
+
+is_favourite: bool = false    @label="Favourite"                                 @group="Admin" @order=12
+notes:        optional[string] @label="Notes" @rows=2                            @group="Admin" @order=13
+added_at:     string          @label="Added"  @readonly                          @group="Admin" @order=14
+
+
+# ── Sensors ───────────────────────────────────────────────────────
+# Sensor extends Device and adds type-specific metadata.
+# The readings list holds historical samples.
+
+[interface SensorReading]
+value:      float            @label="Value"     @order=1
+unit:       string           @label="Unit"      @placeholder="°C, %, ppm…" @order=2
+recorded_at: string          @label="Timestamp" @readonly @order=3
+
+
+[interface Sensor extends Device]
+sensor_type:   SensorType    @label="Sensor Type"                              @order=15
+unit:          string        @label="Unit"        @placeholder="°C"           @order=16
+min_value:     optional[float] @label="Min Value" @hint="Calibration floor"   @order=17
+max_value:     optional[float] @label="Max Value" @hint="Calibration ceiling" @order=18
+alert_below:   optional[float] @label="Alert Below"                            @order=19
+alert_above:   optional[float] @label="Alert Above"                            @order=20
+readings:      list[SensorReading] @label="Recent Readings"                   @order=21
+
+
+# ── Scenes ────────────────────────────────────────────────────────
+# A scene is a named snapshot of device states to apply all at once.
+
+[interface SceneStep]
+device:      Device             @label="Device"       @order=1
+target_state: dict[string,string] @label="Target State" @hint="e.g. on: true, brightness: 60" @order=2
+transition_s: int = 1           @label="Transition (s)" @order=3
+
+
+[interface Scene]
+home:        Home               @label="Home"                          @order=1
+name:        string             @label="Scene Name"  @placeholder="Good Morning" @order=2
+type:        SceneType          @label="Type"                          @order=3
+icon:        optional[string]   @label="Icon"        @placeholder="🌅" @order=4
+steps:       list[SceneStep]    @label="Device Steps"                  @order=5
+is_active:   bool = true        @label="Active"                        @order=6
+
+
+# ── Automations ───────────────────────────────────────────────────
+# Trigger/action rules. Each automation has one trigger and one or
+# more actions. Conditions are stored as a dict for flexibility.
+
+[interface AutomationTrigger]
+type:        AutomationTriggerType @label="Trigger Type"          @order=1
+time:        optional[string]      @label="Time"   @placeholder="07:30" @order=2
+device:      optional[Device]      @label="Device" @hint="For device_state triggers" @order=3
+condition:   dict[string,string]   @label="Condition" @hint="e.g. state: on, above: 25" @order=4
+
+
+[interface AutomationAction]
+type:        AutomationActionType  @label="Action Type"   @order=1
+device:      optional[Device]      @label="Device"        @order=2
+scene:       optional[Scene]       @label="Scene"         @order=3
+target_state: dict[string,string]  @label="Target State"  @order=4
+delay_s:     int = 0               @label="Delay (s)"     @order=5
+message:     optional[string]      @label="Message"  @hint="For notifications" @order=6
+webhook_url: optional[string]      @label="Webhook URL"   @order=7
+
+
+[interface Automation]
+home:        Home                  @label="Home"                                @order=1
+name:        string                @label="Automation Name" @placeholder="Turn off lights at midnight" @wide @order=2
+trigger:     AutomationTrigger     @label="Trigger"                             @order=3
+actions:     list[AutomationAction] @label="Actions"                            @order=4
+is_enabled:  bool = true           @label="Enabled"                             @order=5
+last_run:    optional[string]      @label="Last Run" @readonly                  @order=6
+run_count:   int = 0              @label="Run Count" @readonly                  @order=7
+notes:       optional[string]     @label="Notes" @rows=2 @group="Admin"         @order=8
+
+
+# ── Event log ─────────────────────────────────────────────────────
+
+[interface EventLog]
+home:        Home              @label="Home"       @order=1
+device:      optional[Device]  @label="Device"     @order=2
+level:       LogLevel          @label="Level"      @order=3
+event:       string            @label="Event"      @placeholder="device.state_changed" @order=4
+payload:     dict[string,string] @label="Payload"                                @order=5
+timestamp:   string            @label="Timestamp"  @readonly                     @order=6

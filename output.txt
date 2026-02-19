@@ -1,0 +1,29 @@
+Parsed 2 interface(s), 1 enum(s) from test_demo.yaif
+  Config: title='YAIF Showcase', description='Interface definitions → multiple output formats'
+  - User (4 fields)
+  - Metric (2 fields)
+  - Role (enum: 3 values)
+
+--- Generated discord ---
+
+# YAIF Showcase
+> Interface definitions → multiple output formats
+
+**Enums**
+**Role**
+```
+  admin │ editor │ viewer
+```
+
+**User**
+```
+Username  -
+Email     -
+Role      -
+Active    -
+```
+
+**Metric**
+```
+  (no entries)
+```
