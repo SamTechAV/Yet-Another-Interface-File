@@ -9,6 +9,7 @@ codebase.md
 *.so
 arcvhive
 # Distribution / packaging
+.idea
 .Python
 build/
 develop-eggs/

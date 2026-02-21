@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """
 YAIF Runner — entry point.
+
 Usage:
   yaif <file.yaif>
   python -m yaif <file.yaif>
 
-Execution order (when both are present):
-  1. [config.bot]     — create roles, channels, server settings, emojis
-  2. [config.webhook] — post message/embed once server is set up
+The file itself determines what runs — no flags needed.
 
-If neither is present, falls back to terminal mode for preview/debugging.
+  Has [theme] / [page]     → HTML generator  (writes <filename>.html)
+  Has [config.bot]         → Discord bot     (create roles, channels, etc.)
+  Has [config.webhook]     → Discord webhook (post message/embed)
+  Neither                  → Terminal preview / debug
 """
 
 import sys
@@ -18,6 +20,18 @@ sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 from yaif.core import parse_yaif
 from yaif.modules.discord import run_terminal, run_webhook, run_bot
+
+
+def _is_html_file(text: str) -> bool:
+    """Return True if the file contains [theme] or any [page ...] block."""
+    import re
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped in ('[theme]', '[Theme]'):
+            return True
+        if re.fullmatch(r'\[page\s+\S+\]', stripped, re.I):
+            return True
+    return False
 
 
 def main():
@@ -34,6 +48,20 @@ def main():
         print(f"✘ Error: File '{filepath}' not found.")
         sys.exit(1)
 
+    # ── HTML generator ────────────────────────────────────────────────────
+    if _is_html_file(text):
+        from yaif.modules.html import generate
+
+        out_path = filepath.rsplit('.', 1)[0] + '.html'
+        html = generate(text)
+
+        with open(out_path, 'w', encoding='utf-8') as f:
+            f.write(html)
+
+        print(f'✔  HTML written → {out_path}')
+        return
+
+    # ── Discord ───────────────────────────────────────────────────────────
     config     = parse_yaif(text)
     config_cfg = config.get('config', {}) or {}
 
