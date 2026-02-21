@@ -1,7 +1,0 @@
-include LICENSE
-include README.md
-include CHANGELOG.md
-include pyproject.toml
-recursive-include examples *.yaif
-global-exclude *.pyc
-global-exclude __pycache__

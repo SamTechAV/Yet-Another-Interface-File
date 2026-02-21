@@ -1,156 +1,56 @@
+#!/usr/bin/env python3
 """
-CLI entry point — run with: python -m yaif
+YAIF Runner — entry point.
+Usage:
+  yaif <file.yaif>
+  python -m yaif <file.yaif>
+
+Execution order (when both are present):
+  1. [config.bot]     — create roles, channels, server settings, emojis
+  2. [config.webhook] — post message/embed once server is set up
+
+If neither is present, falls back to terminal mode for preview/debugging.
 """
 
 import sys
 import io
-import argparse
-from pathlib import Path
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-# Force UTF-8 output on Windows (charmap can't handle box-drawing chars)
-if sys.stdout.encoding and sys.stdout.encoding.lower() not in ('utf-8', 'utf_8'):
-    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
-if sys.stderr.encoding and sys.stderr.encoding.lower() not in ('utf-8', 'utf_8'):
-    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
-
-from .parser import YAIFParser, YAIFParseError
-from .generators import GENERATORS, FILE_EXTENSIONS
-from .watcher import watch
+from yaif.core import parse_yaif
+from yaif.modules.discord import run_terminal, run_webhook, run_bot
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description='YAIF - Yet Another Interface File processor',
-        epilog=(
-            'Examples:\n'
-            '  python -m yaif example.yaif --target html -o out.html\n'
-            '  python -m yaif release.yaif -t discord --send\n'
-            '  python -m yaif release.yaif -t discord --send --embed\n'
-            '  python -m yaif release.yaif -t discord --send --webhook-url https://discord.com/api/webhooks/...\n'
-        ),
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
-    parser.add_argument('file', help='Path to a .yaif file')
-    parser.add_argument(
-        '--target', '-t',
-        choices=list(GENERATORS.keys()),
-        default='python',
-        help='Output target language (default: python)',
-    )
-    parser.add_argument(
-        '--output', '-o',
-        help='Output file path (default: print to stdout)',
-    )
-    parser.add_argument(
-        '--validate-only', '-v',
-        action='store_true',
-        help="Only validate the .yaif file, don't generate code",
-    )
-    parser.add_argument(
-        '--watch', '-w',
-        action='store_true',
-        help='Watch the file for changes and regenerate automatically',
-    )
-
-    # ── Webhook flags ──────────────────────────────────────────────────────────
-    webhook_group = parser.add_argument_group(
-        'Discord webhook',
-        'Send output directly to a Discord channel via webhook.',
-    )
-    webhook_group.add_argument(
-        '--send',
-        action='store_true',
-        help=(
-            'Send generated output to a Discord webhook. '
-            'The webhook URL must be set via --webhook-url or the webhook_url key in [config].'
-        ),
-    )
-    webhook_group.add_argument(
-        '--webhook-url',
-        metavar='URL',
-        help='Discord webhook URL. Overrides the webhook_url key in [config].',
-    )
-    webhook_group.add_argument(
-        '--embed',
-        action='store_true',
-        default=None,
-        help=(
-            'Send as Discord rich embeds instead of plain text. '
-            'Overrides the embed_mode key in [config].'
-        ),
-    )
-    webhook_group.add_argument(
-        '--webhook-username',
-        metavar='NAME',
-        help='Override the webhook bot display name.',
-    )
-    webhook_group.add_argument(
-        '--webhook-avatar',
-        metavar='URL',
-        help='Override the webhook bot avatar URL.',
-    )
-
-    args = parser.parse_args()
-
-    if args.watch:
-        watch(args.file, args.target, args.output)
-        return
-
-    yaif_parser = YAIFParser()
-    try:
-        interfaces, enums, config = yaif_parser.parse_file(args.file)
-    except (YAIFParseError, FileNotFoundError, ValueError) as e:
-        print(f"Error: {e}", file=sys.stderr)
+    if len(sys.argv) < 2:
+        print("Usage: yaif <file.yaif>")
         sys.exit(1)
 
-    print(f"Parsed {len(interfaces)} interface(s), {len(enums)} enum(s) from {args.file}")
-    if config.raw:
-        print(f"  Config: {', '.join(f'{k}={v!r}' for k, v in config.raw.items())}")
-    for iface in interfaces:
-        ext = f" (extends {iface.parent})" if iface.parent else ""
-        print(f"  - {iface.name}{ext} ({len(iface.fields)} fields)")
-    for enum in enums:
-        print(f"  - {enum.name} (enum: {len(enum.values)} values)")
+    filepath = sys.argv[1]
 
-    if args.validate_only:
-        print("Validation passed!")
-        sys.exit(0)
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            text = f.read()
+    except FileNotFoundError:
+        print(f"✘ Error: File '{filepath}' not found.")
+        sys.exit(1)
 
-    generator = GENERATORS[args.target]
-    output = generator.generate(interfaces, enums, config)
+    config     = parse_yaif(text)
+    config_cfg = config.get('config', {}) or {}
 
-    # ── Webhook send ───────────────────────────────────────────────────────────
-    if args.send:
-        from .discord_webhook import send, WebhookError
+    has_bot     = isinstance(config_cfg.get('bot'),     dict) and bool(config_cfg['bot'])
+    has_webhook = isinstance(config_cfg.get('webhook'), dict) and bool(config_cfg['webhook'])
 
-        # --embed flag overrides config; if neither set, defaults to False inside send()
-        embed_mode = True if args.embed else None
-
-        try:
-            send(
-                interfaces=interfaces,
-                enums=enums,
-                config=config,
-                webhook_url=args.webhook_url,
-                embed_mode=embed_mode,
-                username=args.webhook_username,
-                avatar_url=args.webhook_avatar,
-                plain_text_content=output if args.target == 'discord' else None,
-            )
-            mode_label = "embeds" if (embed_mode or config.get_bool("embed_mode")) else "text"
-            print(f"✓ Sent to Discord webhook ({mode_label} mode).")
-        except WebhookError as e:
-            print(f"Webhook error: {e}", file=sys.stderr)
-            sys.exit(1)
+    # No [config.bot] or [config.webhook] — fall back to terminal preview
+    if not has_bot and not has_webhook:
+        run_terminal(config)
         return
 
-    # ── Normal file / stdout output ────────────────────────────────────────────
-    if args.output:
-        Path(args.output).write_text(output, encoding="utf-8")
-        print(f"Generated {args.target} code -> {args.output}")
-    else:
-        print(f"\n--- Generated {args.target} ---\n")
-        print(output)
+    # Bot always runs first (build the server), then webhook (announce it)
+    if has_bot:
+        run_bot(config)
+
+    if has_webhook:
+        run_webhook(config)
 
 
 if __name__ == '__main__':

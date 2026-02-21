@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "yaif"
+version = "2.0.0"
+description = "Yet Another Init File — configure Discord servers and more from a .yaif file"
+requires-python = ">=3.10"
+dependencies = [
+    "discord.py>=2.3.0",
+]
+
+[project.scripts]
+yaif = "yaif.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["yaif*"]
